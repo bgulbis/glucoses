@@ -1,19 +1,47 @@
 ---
 title: "Glucose Data"
+subtitle: "Exploratory Data Analysis"
 author: "Brian Gulbis"
-date: "October 6, 2017"
-output: html_document
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+    html_document:
+        code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
 ```{r}
 library(tidyverse)
 library(readxl)
 library(lubridate)
+library(plotly)
+library(broom)
+library(themebg)
 
-data_glucose <- read_excel("../data/raw/glucose_values.xlsx")
+data_glucose <- read_excel("../data/raw/glucose_values.xlsx", skip = 1, col_names = c("patient", "period", "datetime", "value")) %>%
+    mutate_at("period", factor, levels = c("Pre", "Drip", "Post")) %>%
+    group_by(patient) %>%
+    mutate(duration = difftime(datetime, first(datetime), units = "hours")) %>%
+    mutate_at("duration", as.numeric)
 ```
 
+```{r, fig.cap="Change in glucose values over time"}
+smth_line <- loess(value ~ duration, data = data_glucose)
+
+plot_ly(x = ~duration, data = data_glucose) %>%
+    add_markers(y = ~value, color = ~period, marker = list(symbol = "circle-open")) %>%
+    add_lines(y = ~fitted(smth_line), showlegend = FALSE) %>%
+    add_ribbons(data = augment(smth_line),
+                ymin = ~.fitted - 1.96 * .se.fit,
+                ymax = ~.fitted + 1.96 * .se.fit,
+                line = list(color = 'rgba(7, 164, 181, 0.05)'),
+                fillcolor = 'rgba(7, 164, 181, 0.2)',
+                showlegend = FALSE)
+```
+
+```{r, fig.cap="Distribution of glucose values during each time period"}
+plot_ly(data_glucose) %>%
+    add_boxplot(x = ~period, y = ~value)
+```
