@@ -1,0 +1,19 @@
+---
+title: "Glucose Data"
+author: "Brian Gulbis"
+date: "October 6, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(lubridate)
+
+data_glucose <- read_excel("../data/raw/glucose_values.xlsx")
+```
+
