@@ -25,7 +25,7 @@ p_box <- ggplot(data_glucose, aes(x = period, y = value)) +
     geom_boxplot() +
     xlab(NULL) +
     ylab("Blood glucose (mg/dL)") +
-    theme_bg() +
+    theme_bg(xticks = FALSE) +
     theme(axis.line = element_line(color = "grey50"))
 
 read_pptx() %>%
